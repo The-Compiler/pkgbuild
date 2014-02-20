@@ -6,23 +6,25 @@
 
 pkgname='vim-full'
 pkgdesc='Vi Improved, a highly configurable, improved version of the vi text editor - with Ruby/Lua/Python/Perl/Netbeans'
-_topver=7.3
-_patchlevel=1287
+_topver=7.4
+_patchlevel=135
 pkgver=${_topver}.${_patchlevel}
 pkgrel=2
 arch=('i686' 'x86_64')
 license=('custom:vim')
 url="http://www.vim.org"
-depends=("vim-runtime=${pkgver}-${pkgrel}" 'gpm')
+depends=("vim-runtime=${pkgver}-2" 'gpm')
 makedepends=('gpm' 'python2' 'ruby' 'lua')
 conflicts=('gvim' 'vim')
+provides=("vim")
 source=("ftp://ftp.archlinux.org/other/vim/vim-${pkgver}.tar.xz"
+        "ftp://ftp.archlinux.org/other/vim/vim-${pkgver}.tar.xz.sig"
         'vimrc'
         'archlinux.vim')
-md5sums=('e43d2b39c51246ad8dba45d0d75748ec'
-         '20fceda56badf201695c57999b0bc609'
+md5sums=('be672ce2a929503412378c998fc3dc27'
+         'SKIP'
+         'b9d4dcb9d3ee2e151dc4be1e94934f6a'
          '10353a61aadc3f276692d0e17db1478e')
-
 build() {
   cd "${srcdir}/vim-${pkgver}"
 
