@@ -6,7 +6,7 @@
 
 pkgname=deluge-git-master
 pkgver=20130527
-pkgrel=1
+pkgrel=2
 pkgdesc="A bittorrent client written with python and pygtk - Git Version (master branch)"
 arch=('any')
 url="http://deluge-torrent.org"
