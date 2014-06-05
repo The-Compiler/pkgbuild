@@ -4,6 +4,18 @@
 # Contributor: tobias [ tobias at archlinux org ]
 # Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
 
+# NOTE: When vim-runtime is upgraded, you need to deal with this package in a
+# rather special way to avoid dependency hell. This is how I handle it:
+#
+# Build the package and ignore dependency to new vim-runtime:
+#   $ makepkg -d
+#
+# Install the package and upgrade vim-runtime:
+#   $ sudo pacman -U vim-full-*.pkg.tar.xz
+#
+# Upgrade the rest of the system:
+#   $ sudo pacman -Suy
+
 pkgname='vim-full'
 pkgdesc='Vi Improved, a highly configurable, improved version of the vi text editor - with Ruby/Lua/Python/Perl/Netbeans'
 _topver=7.4
