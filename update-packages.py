@@ -42,8 +42,9 @@ def get_all_packages():
 
 
 def print_lint(names):
+    whitelist = [os.path.basename(sys.argv[0]), '.git']
     for d in os.listdir(os.getcwd()):
-        if d not in names and d != os.path.basename(sys.argv[0]):
+        if d not in names and d not in whitelist:
             print("Unknown file/directory {}!".format(d))
 
 
