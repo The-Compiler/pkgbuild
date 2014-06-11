@@ -1,0 +1,28 @@
+post_install() {
+    getent group qwebirc &>/dev/null || groupadd -r -g 143 qwebirc >/dev/null
+    getent passwd qwebirc &>/dev/null || useradd -r -u 143 -g qwebirc \
+                                                 -d /var/empty \
+                                                 -s /sbin/nologin -c qwebirc \
+                                                 qwebirc >/dev/null
+
+    cat <<- EOF
+
+    Before starting, edit /etc/qwebirc/config.py, then (and each time after
+    changing the config) don't forget to run as root:
+
+      # qwebirc --compile
+
+    If you want to use SSL, place ssl.key and ssl.cert into /etc/qwebirc and
+    restart qwebirc, e.g. like this:
+
+      # cd /etc/qwebirc
+      # openssl req -x509 -nodes -newkey rsa:2048 -keyout ssl.key -out ssl.cert
+      # systemctl restart qwebirc
+EOF
+}
+
+post_remove() {
+	getent passwd qwebirc &>/dev/null && userdel qwebirc >/dev/null
+	getent group qwebirc &>/dev/null && groupdel qwebirc >/dev/null
+    true
+}

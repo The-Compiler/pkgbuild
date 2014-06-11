@@ -1,0 +1,73 @@
+# Maintainer: Florian Bruhin (The Compiler) <archlinux.org@the-compiler.org>
+
+pkgname=qwebirc-qchat
+pkgver='tip_1_58fe714'
+pkgrel=1
+pkgdesc="AJAX based browser IRC client (stable version, Rizon fork of qwebirc)"
+arch=('any')
+url="http://qwebirc.org/"
+url="https://bitbucket.org/rizon/qchat"
+license=('GPL2')
+depends=('python2' 'twisted')
+optdepends=('python2-pyopenssl: SSL support'
+            'java-runtime: javascript minimisation')
+conflicts=('qwebirc-hg' 'qwebirc' 'qchat')
+source=("${pkgname}.tar.bz2::https://bitbucket.org/rizon/qchat/get/tip.tar.bz2"
+        "${pkgname}.install"
+        "${pkgname}.sh"
+        "${pkgname}.service"
+        compiler.patch)
+install="${pkgname}.install"
+backup=('etc/qwebirc/config.py')
+
+prepare() {
+  cd "${srcdir}/rizon-qchat-"*
+  patch -p1 -i "${srcdir}/compiler.patch"
+}
+
+build() {
+  cd "${srcdir}/rizon-qchat"*
+
+  find . -name '*.py' -exec \
+    sed -i '1s|^#!/usr/bin/env python$|#!/usr/bin/python2|' {} \;
+  
+  # Do a first compile with the example config so these files get
+  # tracked by pacman as well.
+  msg "You can ignore warnings about mercurial."
+  cp config.py.example config.py
+  python2 compile.py
+  rm config.py
+}
+
+package() {
+  cd "${srcdir}/rizon-qchat"*
+
+  install -o143 -g143 -dm755 "${pkgdir}/usr/share/qwebirc"
+  cp -R *.py */ "${pkgdir}/usr/share/qwebirc"
+  touch "${pkgdir}/usr/share/qwebirc/.checked"
+  touch "${pkgdir}/usr/share/qwebirc/.compiled"
+
+  install -o143 -g143 -dm755 "${pkgdir}/etc/qwebirc"
+  install -Dm644 "config.py.example" "${pkgdir}/etc/qwebirc/config.py"
+  ln -s "/etc/qwebirc/config.py" "${pkgdir}/usr/share/qwebirc/config.py"
+
+  install -o143 -g143 -dm755 "${pkgdir}/run/qwebirc"
+  install -o143 -g143 -dm755 "${pkgdir}/var/log/qwebirc"
+
+  install -dm755 "${pkgdir}/usr/bin"
+  install -Dm755 "${srcdir}/qwebirc-qchat.sh" "${pkgdir}/usr/bin/qwebirc"
+  
+  install -dm755 "${pkgdir}/usr/lib/systemd/system"
+  install -Dm644 "${srcdir}/qwebirc-qchat.service" "${pkgdir}/usr/lib/systemd/system/qwebirc.service"
+}
+
+# vim:set ts=2 sw=2 et:
+md5sums=('63c025c609db663e68a4f87d3bffd376'
+         'd537c9d652ddcd2174eb69e3ccfab2b2'
+         'b120740e943a8ac235466319031cb351'
+         'f48cfe6d843e899c2b068237ec79069d')
+md5sums=('63c025c609db663e68a4f87d3bffd376'
+         'd537c9d652ddcd2174eb69e3ccfab2b2'
+         'b120740e943a8ac235466319031cb351'
+         'f48cfe6d843e899c2b068237ec79069d'
+         '03bb511ff52975b6ef7d9092ac7ef4a2')

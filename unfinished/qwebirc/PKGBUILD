@@ -1,0 +1,61 @@
+# Maintainer: Florian Bruhin (The Compiler) <archlinux.org@the-compiler.org>
+
+pkgname=qwebirc
+pkgver='stable_1_516de55'
+pkgrel=1
+pkgdesc="AJAX based browser IRC client (stable version)"
+arch=('any')
+url="http://qwebirc.org/"
+license=('GPL2')
+depends=('python2' 'twisted')
+optdepends=('python2-pyopenssl: SSL support'
+            'java-runtime: javascript minimisation')
+conflicts=('qwebirc-hg')
+source=("${pkgname}.tar.bz2::http://qwebirc.org/download-stable-bz2"
+        "${pkgname}.install"
+        "${pkgname}.sh"
+        "${pkgname}.service")
+install="${pkgname}.install"
+md5sums=('32051b89bfb0b97a84b2b044a3b3ea4f'
+         'd537c9d652ddcd2174eb69e3ccfab2b2'
+         'b120740e943a8ac235466319031cb351'
+         'f48cfe6d843e899c2b068237ec79069d')
+backup=('etc/qwebirc/config.py')
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgname}-"*
+
+  find . -name '*.py' -exec \
+    sed -i '1s|^#!/usr/bin/env python$|#!/usr/bin/python2|' {} \;
+  
+  # Do a first compile with the example config so these files get
+  # tracked by pacman as well.
+  msg "You can ignore warnings about mercurial."
+  cp config.py.example config.py
+  python2 compile.py
+  rm config.py
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgname}-"*
+
+  install -o143 -g143 -dm755 "${pkgdir}/usr/share/qwebirc"
+  cp -R *.py */ "${pkgdir}/usr/share/qwebirc"
+  touch "${pkgdir}/usr/share/qwebirc/.checked"
+  touch "${pkgdir}/usr/share/qwebirc/.compiled"
+
+  install -o143 -g143 -dm755 "${pkgdir}/etc/qwebirc"
+  install -Dm644 "config.py.example" "${pkgdir}/etc/qwebirc/config.py"
+  ln -s "/etc/qwebirc/config.py" "${pkgdir}/usr/share/qwebirc/config.py"
+
+  install -o143 -g143 -dm755 "${pkgdir}/run/qwebirc"
+  install -o143 -g143 -dm755 "${pkgdir}/var/log/qwebirc"
+
+  install -dm755 "${pkgdir}/usr/bin"
+  install -Dm755 "${srcdir}/qwebirc.sh" "${pkgdir}/usr/bin/qwebirc"
+  
+  install -dm755 "${pkgdir}/usr/lib/systemd/system"
+  install -Dm644 "${srcdir}/qwebirc.service" "${pkgdir}/usr/lib/systemd/system"
+}
+
+# vim:set ts=2 sw=2 et:

@@ -1,0 +1,177 @@
+diff -r 58fe7149e2cc js/jslib.js
+--- a/js/jslib.js	Wed Jul 25 05:20:30 2012 +0200
++++ b/js/jslib.js	Mon Apr 15 22:09:56 2013 +0200
+@@ -271,8 +271,6 @@
+     r = new Element("select");
+     r.grab( new Element('option', { value: 'None', text: 'None' }) );
+     r.grab( new Element('option', { value: 'connect_auth_to_service', text: 'Identify to NickServ' }) );
+-    r.grab( new Element('option', { value: 'auth_to_bncus', text: 'Connect to RizonBNC US' }) );
+-    r.grab( new Element('option', { value: 'auth_to_bnceu', text: 'Connect to RizonBNC EU' }) );
+     
+   parent.appendChild(r);
+   return r;
+diff -r 58fe7149e2cc js/qwebircinterface.js
+--- a/js/qwebircinterface.js	Wed Jul 25 05:20:30 2012 +0200
++++ b/js/qwebircinterface.js	Mon Apr 15 22:09:56 2013 +0200
+@@ -11,13 +11,13 @@
+ qwebirc.ui.Interface = new Class({
+   Implements: [Options],
+   options: {
+-    initialNickname: "Rizon" + Math.ceil(Math.random() * 100000),
+-    initialChannels: "#Rizon",
+-    networkName: "Rizon",
++    initialNickname: "CompilerIRC" + Math.ceil(Math.random() * 100000),
++    initialChannels: "#compiler",
++    networkName: "CompilerIRC",
+     networkServices: [],
+     recaptchaKey: null,
+     loginRegex: null,
+-    appTitle: "Rizon Web IRC",
++    appTitle: "Compiler Web IRC",
+     searchURL: true,
+     theme: undefined,
+     baseURL: null,
+@@ -44,7 +44,7 @@
+         var IRC = new qwebirc.irc.IRCClient(options, ui_);
+         IRC.connect();
+         window.addEvent("unload", function() {
+-          IRC.quit("Rizon webchat: http://qchat.rizon.net/");
++          IRC.quit("CompilerIRC webchat: http://chat.the-compiler.org/");
+         });
+       };
+ 
+diff -r 58fe7149e2cc js/ui/baseui.js
+--- a/js/ui/baseui.js	Wed Jul 25 05:20:30 2012 +0200
++++ b/js/ui/baseui.js	Mon Apr 15 22:09:56 2013 +0200
+@@ -62,6 +62,7 @@
+       w.addLine("", "qwebirc v" + qwebirc.VERSION);
+       w.addLine("", "Copyright (C) 2008-2011 Chris Porter and the qwebirc project.");
+       w.addLine("", "Copyright (C) 2010-2011 Rizon development team.");
++      w.addLine("", "Copyright (C) 2013 The Compiler.");
+       w.addLine("", "http://www.qwebirc.org");
+       w.addLine("", "Licensed under the GNU General Public License, Version 2.");
+     }
+diff -r 58fe7149e2cc js/ui/panes/embed.js
+--- a/js/ui/panes/embed.js	Wed Jul 25 05:20:30 2012 +0200
++++ b/js/ui/panes/embed.js	Mon Apr 15 22:09:56 2013 +0200
+@@ -34,7 +34,7 @@
+   options: {
+     uiOptions: null,
+     optionsCallback: null,
+-    baseURL: "http://qchat.rizon.net/"
++    baseURL: "http://chat.the-compiler.org/"
+   },
+   initialize: function(parent, options) {
+     /* for some unknown reason setOptions doesn't work... */
+@@ -128,7 +128,7 @@
+       "title": "Set channels",
+       "first": "Enter the channels you would like the client to join on startup:",
+       "hint": "You can supply multiple channels by seperating them with a comma, e.g.:",
+-      "example": "#rizon,#news",
++      "example": "#compiler,#help",
+       middle: this.chanBox
+     }).addEvent("show", af.bind(this.chanBox));
+     
+@@ -141,7 +141,7 @@
+     });
+ 
+     this.choosenick = this.newRadio(customnickDiv, "Make the user choose a nickname.", "nick", true);
+-    this.randnick = this.newRadio(customnickDiv, "Use a random nickname, e.g. Rizon12883.", "nick");
++    this.randnick = this.newRadio(customnickDiv, "Use a random nickname, e.g. Random12883.", "nick");
+     this.presetnick = this.newRadio(customnickDiv, "Use a preset nickname of your choice.", "nick");
+     
+     var promptdiv = new Element("form");
+diff -r 58fe7149e2cc js/version.js
+--- a/js/version.js	Wed Jul 25 05:20:30 2012 +0200
++++ b/js/version.js	Mon Apr 15 22:09:56 2013 +0200
+@@ -1,1 +1,1 @@
+-qwebirc.VERSION = "0.91-rizon105"
++qwebirc.VERSION = "0.91-rizon105-compiler1"
+diff -r 58fe7149e2cc qwebirc/ircclient.py
+--- a/qwebirc/ircclient.py	Wed Jul 25 05:20:30 2012 +0200
++++ b/qwebirc/ircclient.py	Mon Apr 15 22:09:56 2013 +0200
+@@ -166,19 +166,9 @@
+     tcpkwargs["bindAddress"] = (config.OUTGOING_IP, 0)
+   if CONNECTION_RESOLVER is None:
+     if hasattr(config, "SSLPORT"):
+-      if kwargs.get("bnceupassword") is not None:
+-         reactor.connectSSL("rizonbnc.eu.rizon.net", 12345, f, ssl.ClientContextFactory())
+-      elif kwargs.get("bncuspassword") is not None:
+-         reactor.connectSSL("rizonbnc.us.rizon.net", 12345, f,  ssl.ClientContextFactory())
+-      else:        
+-         reactor.connectSSL(config.IRCSERVER, config.SSLPORT, f, ssl.ClientContextFactory())
++      reactor.connectSSL(config.IRCSERVER, config.SSLPORT, f, ssl.ClientContextFactory())
+     else:
+-      if kwargs.get("bnceupassword") is not None:
+-        reactor.connectTCP("rizonbnc.eu.rizon.net", 1234, f, **tcpkwargs)
+-      elif kwargs.get("bncuspassword") is not None:
+-        reactor.connectTCP("rizonbnc.us.rizon.net", 1234, f, **tcpkwargs)
+-      else:
+-        reactor.connectTCP(config.IRCSERVER, config.IRCPORT, f, **tcpkwargs)
++      reactor.connectTCP(config.IRCSERVER, config.IRCPORT, f, **tcpkwargs)
+     return f
+ 
+   def callback(result):
+diff -r 58fe7149e2cc static/panes/about.html
+--- a/static/panes/about.html	Wed Jul 25 05:20:30 2012 +0200
++++ b/static/panes/about.html	Mon Apr 15 22:09:56 2013 +0200
+@@ -44,6 +44,5 @@
+     </tr>
+   </table>
+  <p>Special thanks to various comments/suggestions/hardware/bug reports from Zarjazz, Bazerka, boojah, meeb, Microbe, morphium, Starman, truff, coekie, qip, soczol, tomaw, the muppets in #rogue (hi dunks!) and everyone else I forgot :(.</p>
+- <p>Also, thank <b>*you*</b> for flying Rizon!</p>    
+   <input type="submit" value="Close" class="close" />
+-</div>
+\ No newline at end of file
++</div>
+diff -r 58fe7149e2cc static/panes/faq.html
+--- a/static/panes/faq.html	Wed Jul 25 05:20:30 2012 +0200
++++ b/static/panes/faq.html	Mon Apr 15 22:09:56 2013 +0200
+@@ -11,11 +11,10 @@
+   <p><b>What is qwebirc?</b></p>
+   <p>qwebirc is a webchat client. It is somewhat similar to Mibbit.</p>
+   <p><b>Can I use qwebirc using SSL?</b></p>
+-  <p>Yes, use <a href="https://qchat.rizon.net/">https://qchat.rizon.net/</a>.</p>
++  <p>Yes, use <a href="https://chat.the-compiler.org/">https://chat.the-compiler.org/</a>.</p>
+   <p><b>Can I put webchat on my website?</b></p>
+   <p>In a status/channel window, type <b>/embed</b> or click on the qwebirc icon and choose "Add webchat to your site".</p>
+-  <p>If you need any help related to IRC or Rizon, join #Help.</p>
+-  <p>If you need the support of an IRC Operator, join #Services.</p>
++  <p>If you need any help related to IRC or CompilerIRC, join #Help.</p>
+ 
+   <input type="submit" value="Close" class="close" />
+ </div>
+diff -r 58fe7149e2cc static/panes/rules.html
+--- a/static/panes/rules.html	Wed Jul 25 05:20:30 2012 +0200
++++ b/static/panes/rules.html	Mon Apr 15 22:09:56 2013 +0200
+@@ -1,27 +1,25 @@
+ <div class="header">
+   <table>
+     <tr>
+-      <td><img transform_attr="src" transform_value="images/rizon-cn.png" alt="Rizon" title="Rizon"/></td>
+       <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+-      <td><div class="title">Rizon IRC Network</div><div class="version">IRC Rules</div></td>
++      <td><div class="title">CompilerIRC Network</div><div class="version">IRC Rules</div></td>
+     </tr>
+   </table>
+ </div>
+ <div class="mainbody">
+   <h3>Server Rules</h3>
+   <p>
++    *  Use common sense<br />
+     *  No flooding<br />
+-    *  No bots (auto-detected)<br />
+     *  No clones<br />
+     *  No spamming<br />
+     *  No takeovers<br />
+-    *  We will not tolerate the distribution of child pornography.<br />
+     *  Access granted to webchat is a privilege.<br />
+     *  Staff members may disconnect clients for any or no reason.
+   </p>
+   <h3>Disclaimer</h3>
+   <p>The use of the webchat server and network is a privilege, not a right.</p>
+-  <p>IRC is free media, therefore no person or entity involved with *.rizon.net takes any responsibility whatsoever for the opinions expressed or the actions taken by users. Absolutely no warranty is either expressed or implied.</p>
++  <p>IRC is free media, therefore no person or entity involved with CompilerIRC takes any responsibility whatsoever for the opinions expressed or the actions taken by users. Absolutely no warranty is either expressed or implied.</p>
+ 
+   <input type="submit" value="Close" class="close" />
+ </div>

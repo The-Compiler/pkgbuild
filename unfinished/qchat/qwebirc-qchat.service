@@ -1,0 +1,13 @@
+[Unit]
+Description=AJAX web IRC client
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/qwebirc/qwebirc.pid
+ExecStart=/usr/bin/qwebirc
+User=qwebirc
+Group=qwebirc
+
+[Install]
+WantedBy=multi-user.target
