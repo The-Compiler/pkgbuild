@@ -1,0 +1,28 @@
+# Maintainer: Florian Bruhin (The Compiler) <archlinux.org@the-compiler.org>
+
+pkgname=node-buildbot-github-git
+pkgver=v0.2.2.r4.g7cc457a
+pkgrel=1
+pkgdesc="A service to trigger buildbot builds based on GitHub pullrequests"
+arch=(any)
+url="https://github.com/Kami/node-buildbot-github"
+license=('Apache')
+depends=('nodejs')
+source=('git+https://github.com/Kami/node-buildbot-github.git')
+md5sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/node-buildbot-github"
+  git describe --long --tags | sed -r 's/([^-]*-g)/r\1/;s/-/./g'
+}
+
+package() {
+  cd "$srcdir/node-buildbot-github"
+  sed -i 's/"github": "= 0.0.6",/"github": "= 0.2.3",/' package.json
+  local _npmdir="$pkgdir/usr/lib/node_modules/"
+  mkdir -p "$_npmdir"
+  cd "$_npmdir"
+  npm install -g --prefix "$pkgdir/usr" "$srcdir/node-buildbot-github"
+}
+
+# vim:set ts=2 sw=2 et:
